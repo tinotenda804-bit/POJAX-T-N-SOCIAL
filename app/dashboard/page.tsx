@@ -88,169 +88,163 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#050b18] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#050b18] text-sm text-white">
         Loading your dashboard...
       </main>
     );
   }
 
+  const quickLinks = [
+    {
+      title: "POJAX PROFILE",
+      description: "Manage your member information.",
+      action: "Open Profile",
+      path: "/profile",
+    },
+    {
+      title: "POJAX SECURITY",
+      description: "Manage your account security.",
+      action: "Open Security",
+      path: "/security",
+    },
+    {
+      title: "POJAX GROUPS",
+      description: "Explore and manage your groups.",
+      action: "Open Groups",
+      path: "/groups",
+    },
+    {
+      title: "POJAX SEARCH",
+      description: "Find people and platform content.",
+      action: "Search Now",
+      path: "/search",
+    },
+  ];
+
   return (
-    <main className="min-h-screen bg-[#050b18] p-5 text-white md:p-8">
+    <main className="min-h-screen bg-[#050b18] px-3 py-4 text-white sm:px-5 sm:py-6 md:px-8">
       <div className="mx-auto max-w-7xl">
 
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-cyan-500/30 pb-6">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-500/30 pb-4">
           <div>
-            <h1 className="text-3xl font-black tracking-wide text-cyan-400">
+            <h1 className="text-2xl font-black tracking-wide text-cyan-400 sm:text-3xl">
               POJAX T-N
             </h1>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 sm:text-sm">
               Your world of connections and opportunities.
             </p>
           </div>
 
           <button
             onClick={handleLogout}
-            className="rounded-lg bg-cyan-500 px-5 py-3 font-bold text-black transition hover:bg-cyan-400"
+            className="rounded-md bg-cyan-500 px-3 py-2 text-xs font-bold text-black transition hover:bg-cyan-400 sm:px-4"
           >
             Sign Out
           </button>
         </header>
 
-        <section className="mt-8 rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-[#0b1b35] to-[#0b1628] p-7">
-          <p className="text-sm font-semibold tracking-widest text-cyan-400">
+        <section className="mt-5 rounded-xl border border-cyan-500/30 bg-gradient-to-r from-[#0b1b35] to-[#0b1628] p-4 sm:mt-7 sm:p-6">
+          <p className="text-xs font-semibold tracking-widest text-cyan-400">
             MEMBER DASHBOARD
           </p>
 
-          <h2 className="mt-4 text-3xl font-black md:text-4xl">
+          <h2 className="mt-3 text-2xl font-black sm:text-3xl md:text-4xl">
             Welcome to PojaX T-N.
           </h2>
 
-          <p className="mt-3 max-w-2xl leading-7 text-gray-300">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-300">
             Connect with people, share ideas, learn, discover opportunities
             and contribute to a growing global platform.
           </p>
 
-          <div className="mt-6 border-t border-white/10 pt-5">
-            <p className="text-sm text-gray-400">Your signed-in email</p>
-            <p className="mt-1 break-all font-semibold text-cyan-300">
+          <div className="mt-4 border-t border-white/10 pt-3">
+            <p className="text-xs text-gray-400">Your signed-in email</p>
+            <p className="mt-1 break-all text-sm font-semibold text-cyan-300">
               {email}
             </p>
           </div>
         </section>
 
-        {/* MEMBER QUICK ACCESS */}
-        <section className="mt-8">
-          <p className="text-sm font-bold tracking-widest text-cyan-400">
+        <section className="mt-7">
+          <p className="text-xs font-bold tracking-widest text-cyan-400">
             MEMBER QUICK ACCESS
           </p>
 
-          <h2 className="mt-2 text-2xl font-black">
+          <h2 className="mt-1 text-xl font-black sm:text-2xl">
             Your account and community
           </h2>
 
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
+            {quickLinks.map((link) => (
+              <button
+                key={link.title}
+                onClick={() => router.push(link.path)}
+                className="min-w-0 rounded-lg border border-cyan-800 bg-[#0b1628] p-3 text-left transition hover:border-cyan-400 hover:bg-[#10213a] sm:p-4"
+              >
+                <h3 className="text-xs font-bold text-cyan-400 sm:text-sm">
+                  {link.title}
+                </h3>
 
-            <button
-              onClick={() => router.push("/profile")}
-              className="rounded-xl border border-cyan-800 bg-[#0b1628] p-5 text-left transition hover:border-cyan-400"
-            >
-              <h3 className="font-bold text-cyan-400">POJAX PROFILE</h3>
-              <p className="mt-2 text-sm text-gray-400">
-                View and manage your member information.
-              </p>
-              <span className="mt-4 inline-block text-sm font-semibold text-cyan-300">
-                Open Profile →
-              </span>
-            </button>
+                <p className="mt-1 text-xs leading-5 text-gray-400">
+                  {link.description}
+                </p>
 
-            <button
-              onClick={() => router.push("/security")}
-              className="rounded-xl border border-cyan-800 bg-[#0b1628] p-5 text-left transition hover:border-cyan-400"
-            >
-              <h3 className="font-bold text-cyan-400">POJAX SECURITY</h3>
-              <p className="mt-2 text-sm text-gray-400">
-                Manage your password and account security.
-              </p>
-              <span className="mt-4 inline-block text-sm font-semibold text-cyan-300">
-                Open Security →
-              </span>
-            </button>
-
-            <button
-              onClick={() => router.push("/groups")}
-              className="rounded-xl border border-cyan-800 bg-[#0b1628] p-5 text-left transition hover:border-cyan-400"
-            >
-              <h3 className="font-bold text-cyan-400">POJAX GROUPS</h3>
-              <p className="mt-2 text-sm text-gray-400">
-                Discover communities, manage your groups and connect with members.
-              </p>
-              <span className="mt-4 inline-block text-sm font-semibold text-cyan-300">
-                Open Groups →
-              </span>
-            </button>
-
-            <button
-              onClick={() => router.push("/search")}
-              className="rounded-xl border border-cyan-800 bg-[#0b1628] p-5 text-left transition hover:border-cyan-400"
-            >
-              <h3 className="font-bold text-cyan-400">POJAX SEARCH</h3>
-              <p className="mt-2 text-sm text-gray-400">
-                Find people and explore available platform content.
-              </p>
-              <span className="mt-4 inline-block text-sm font-semibold text-cyan-300">
-                Search Now →
-              </span>
-            </button>
-
+                <span className="mt-3 inline-block text-xs font-semibold text-cyan-300">
+                  {link.action} →
+                </span>
+              </button>
+            ))}
           </div>
         </section>
 
-        {/* PLATFORM SECTIONS */}
-        <section className="mt-12">
+        <section className="mt-9">
           <div>
-            <p className="text-sm font-bold tracking-widest text-cyan-400">
+            <p className="text-xs font-bold tracking-widest text-cyan-400">
               YOUR PLATFORM
             </p>
-            <h2 className="mt-2 text-2xl font-black">
+
+            <h2 className="mt-1 text-xl font-black sm:text-2xl">
               Explore PojaX T-N
             </h2>
-            <p className="mt-2 text-sm text-gray-400">
+
+            <p className="mt-1 text-xs text-gray-400 sm:text-sm">
               Different opportunities. One connected platform.
             </p>
           </div>
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
             {sections.map((section) => (
               <article
                 key={section.number}
-                className="rounded-xl border border-gray-700 bg-[#0b1628] p-6 transition hover:-translate-y-1 hover:border-cyan-400/60"
+                className="min-w-0 rounded-lg border border-gray-700 bg-[#0b1628] p-4 transition hover:border-cyan-400/60"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-3xl text-cyan-400">
+                  <span className="text-2xl text-cyan-400">
                     {section.icon}
                   </span>
+
                   <span className="text-xs text-gray-600">
                     {section.number}
                   </span>
                 </div>
 
-                <h3 className="mt-6 text-base font-bold text-cyan-400">
+                <h3 className="mt-3 text-sm font-bold text-cyan-400">
                   {section.title}
                 </h3>
 
-                <p className="mt-3 text-sm leading-6 text-gray-400">
+                <p className="mt-2 text-xs leading-5 text-gray-400">
                   {section.description}
                 </p>
 
                 {section.title === "POJAX SOCIAL" ? (
                   <button
                     onClick={() => router.push("/social")}
-                    className="mt-5 rounded-lg bg-cyan-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-cyan-400"
+                    className="mt-4 rounded-md bg-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-400"
                   >
-                    OPEN POJAX SOCIAL →
+                    OPEN SOCIAL →
                   </button>
                 ) : (
-                  <p className="mt-5 text-xs font-bold tracking-widest text-cyan-400">
+                  <p className="mt-4 text-xs font-bold tracking-widest text-cyan-400">
                     IN DEVELOPMENT
                   </p>
                 )}
@@ -259,7 +253,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <footer className="mt-12 border-t border-white/10 py-6 text-center text-xs text-gray-500">
+        <footer className="mt-9 border-t border-white/10 py-5 text-center text-xs text-gray-500">
           © 2026 PojaX T-N. Connect the world. Empower expertise. Protect the future.
         </footer>
 
