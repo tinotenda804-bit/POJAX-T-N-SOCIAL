@@ -93,7 +93,7 @@ export default function Home() {
             href="/signup"
             className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-bold text-[#050914] hover:bg-cyan-300"
           >
-            Join Us
+            Create account
           </a>
         </div>
       </nav>
@@ -233,7 +233,7 @@ export default function Home() {
           href="/signup"
           className="mt-8 inline-block rounded-lg bg-cyan-400 px-8 py-4 font-bold text-[#050914]"
         >
-          Become a Member
+          CREATE ACCOUNT
         </a>
       </section>
 
