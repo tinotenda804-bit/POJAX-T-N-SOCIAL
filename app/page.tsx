@@ -77,7 +77,7 @@ export default function Home() {
 
           <p className="mx-auto mt-6 max-w-3xl leading-8 text-slate-400">
             POJAX SOCIAL is a platform being developed to connect people
-            across Africa and the world. It aims to provide a place where
+            across the world. It aims to provide a place where
             members can create profiles, share ideas, publish content,
             communicate, learn, discover opportunities and build communities.
           </p>
