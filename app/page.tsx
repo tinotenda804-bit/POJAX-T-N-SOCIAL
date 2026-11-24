@@ -93,7 +93,7 @@ export default function Home() {
             href="/signup"
             className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-bold text-[#050914] hover:bg-cyan-300"
           >
-            Create account
+            Create Account
           </a>
         </div>
       </nav>
