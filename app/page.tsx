@@ -25,12 +25,7 @@ export default function Home() {
             Log In
           </a>
 
-          <a
-            href="#about"
-            className="rounded-lg border border-cyan-400/50 px-4 py-2.5 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-400 hover:text-[#050914]"
-          >
-            About This Platform
-          </a>
+        
         </div>
       </nav>
 
