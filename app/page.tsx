@@ -104,7 +104,7 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-4xl">
           <p className="mb-6 text-sm font-semibold tracking-[0.35em] text-cyan-400">
-            CONNECTION • KNOWLEDGE • OPPORTUNITY
+            CONNECTION • KNOWLEDGE   OPPORTUNITY
           </p>
 
           <h1 className="text-5xl font-black leading-tight md:text-7xl">
