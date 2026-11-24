@@ -1,4 +1,4 @@
-
+import Logo from "@/components/Logo";
 const services = [
   {
     number: "01",
@@ -54,9 +54,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#050914] text-white">
       <nav className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-6 py-5 md:px-12">
-        <a href="#" className="text-2xl font-black tracking-widest text-cyan-400">
-          POJAX<span className="text-white"> T-N</span>
-        </a>
+        <a href="/" className="flex items-center">
+  <Logo size={42} />
+</a>
 
         <div className="hidden items-center gap-8 text-sm text-slate-300 md:flex">
           <a href="#about" className="hover:text-cyan-400">About</a>
