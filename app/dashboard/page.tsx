@@ -150,12 +150,6 @@ export default function DashboardPage() {
       action: "Search Now",
       path: "/search",
     },
-    {
-      title: "POJAX REELS",
-      description: "Watch videos and discover creators.",
-      action: "Watch Reels",
-      path: "/reels",
-    },
   ];
 
   return (
