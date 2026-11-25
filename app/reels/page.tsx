@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -131,9 +130,7 @@ export default function ReelsPage() {
 
     const { data: reelData, error: reelError } = await supabase
       .from("reels")
-      .select(
-        "id,user_id,caption,video_path,created_at"
-      )
+      .select("id,user_id,caption,video_path,created_at")
       .order("created_at", { ascending: false })
       .limit(30);
 
@@ -309,38 +306,57 @@ export default function ReelsPage() {
       if (!video) return;
 
       if (id === activeReel && playing && !document.hidden) {
-        video.play().catch(() => setPlaying(false));
+        const playPromise = video.play();
+
+        if (playPromise) {
+          playPromise.catch(() => {
+            // Mobile browsers may block automatic playback.
+            // The member can start playback with a tap.
+            setPlaying(false);
+          });
+        }
       } else {
         video.pause();
       }
     });
   }, [activeReel, playing, reels]);
 
-  // Stop playback immediately when the page is hidden or this component leaves.
+  // Stop every video as soon as the page is hidden or left.
+  // This prevents audio from continuing after navigation on phones.
   useEffect(() => {
     const pauseAllVideos = () => {
       Object.values(videoRefs.current).forEach((video) => {
         if (video && !video.paused) video.pause();
       });
-      setPlaying(false);
     };
 
     const handleVisibilityChange = () => {
-      if (document.hidden) pauseAllVideos();
+      if (document.hidden) {
+        pauseAllVideos();
+        setPlaying(false);
+      }
+    };
+
+    const handlePageHide = () => {
+      pauseAllVideos();
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", pauseAllVideos);
+    window.addEventListener("pagehide", handlePageHide);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", pauseAllVideos);
+      window.removeEventListener("pagehide", handlePageHide);
+
+      // Pause synchronously so audio does not continue in the background.
       Object.values(videoRefs.current).forEach((video) => {
         if (!video) return;
+
         video.pause();
         video.removeAttribute("src");
         video.load();
       });
+
       videoRefs.current = {};
     };
   }, []);
@@ -352,29 +368,14 @@ export default function ReelsPage() {
   function startReactionHold(reelId: string) {
     holdTriggered.current = false;
 
-    if (holdTimer.current) clearTimeout(holdTimer.current);
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+    }
 
     holdTimer.current = setTimeout(() => {
       holdTriggered.current = true;
       setReactionPicker(reelId);
-      holdTimer.current = null;
-    }, 1000);
-  }
-
-  function finishReactionPress(reelId: string) {
-    if (holdTimer.current) {
-      clearTimeout(holdTimer.current);
-      holdTimer.current = null;
-    }
-
-    if (holdTriggered.current) {
-      // The one-second hold opened the picker; do not also add a Like.
-      holdTriggered.current = false;
-      return;
-    }
-
-    // A short tap applies the default Like reaction.
-    void toggleReaction(reelId);
+    }, 2000);
   }
 
   function cancelReactionHold() {
@@ -382,7 +383,6 @@ export default function ReelsPage() {
       clearTimeout(holdTimer.current);
       holdTimer.current = null;
     }
-    holdTriggered.current = false;
   }
 
   async function chooseReaction(
@@ -778,7 +778,7 @@ export default function ReelsPage() {
           </button>
         </div>
       ) : (
-        <div className="reels-feed-scrollbar h-full snap-y snap-mandatory overflow-y-scroll overscroll-contain">
+        <div className="h-full snap-y snap-mandatory overflow-y-scroll overscroll-contain">
           {reels.map((reel) => {
             const selectedReaction = REACTIONS.find(
               (item) => item.id === reel.my_reaction
@@ -788,17 +788,29 @@ export default function ReelsPage() {
               <section
                 key={reel.id}
                 data-reel-id={reel.id}
-                className="relative h-[100dvh] w-full snap-start snap-always overflow-hidden bg-black"
+                className="relative h-screen min-h-[100svh] w-full snap-start snap-always overflow-hidden bg-black"
               >
                 <video
                   ref={(element) => {
                     videoRefs.current[reel.id] = element;
                   }}
                   src={reel.video_url}
-                  className="absolute inset-0 h-full w-full cursor-pointer object-contain"
+                  className="absolute inset-0 z-0 block h-full w-full cursor-pointer bg-black object-contain"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    objectPosition: "center",
+                  }}
                   loop
                   playsInline
-                  preload="metadata"
+                  preload="auto"
+                  disablePictureInPicture
+                  onError={() =>
+                    setError(
+                      "This video could not be displayed on this device. Please try an MP4 video encoded with H.264 video and AAC audio."
+                    )
+                  }
                   onClick={() =>
                     setPlaying((value) =>
                       reel.id === activeReel ? !value : true
@@ -806,9 +818,6 @@ export default function ReelsPage() {
                   }
                   onPlay={() => {
                     if (reel.id === activeReel) setPlaying(true);
-                  }}
-                  onPause={() => {
-                    if (reel.id === activeReel) setPlaying(false);
                   }}
                 />
 
@@ -843,20 +852,16 @@ export default function ReelsPage() {
                       )}
                     </a>
 
-                    <a
-                      href={`/profile/${reel.user_id}`}
-                      className="min-w-0 rounded-sm outline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
-                      aria-label={`Open ${reel.display_name}'s profile`}
-                    >
+                    <div className="min-w-0">
                       <p className="truncate text-sm font-bold">
                         {reel.display_name}
                       </p>
                       {reel.username && (
-                        <p className="truncate text-xs text-white/70">
+                        <p className="text-xs text-white/70">
                           @{reel.username}
                         </p>
                       )}
-                    </a>
+                    </div>
 
                     {reel.user_id !== userId && (
                       <button
@@ -883,15 +888,15 @@ export default function ReelsPage() {
                 <div className="absolute bottom-28 right-3 z-30 flex flex-col items-center gap-6">
                   <div className="relative flex flex-col items-center">
                     {reactionPicker === reel.id && (
-                      <div className="absolute bottom-16 right-0 z-50 grid grid-cols-4 gap-1 rounded-2xl border border-white/15 bg-black/90 p-2 shadow-xl backdrop-blur sm:grid-cols-7">
+                      <div className="absolute bottom-12 right-0 flex gap-2 rounded-full bg-black/75 p-2 shadow-xl backdrop-blur">
                         {REACTIONS.map((reaction) => (
                           <button
                             key={reaction.id}
-                            type="button"
                             title={reaction.label}
-                            aria-label={reaction.label}
-                            onClick={() => chooseReaction(reel.id, reaction.id)}
-                            className="flex h-10 w-10 items-center justify-center rounded-full text-2xl hover:bg-white/15 active:scale-95"
+                            onClick={() =>
+                              chooseReaction(reel.id, reaction.id)
+                            }
+                            className="text-2xl transition-transform hover:scale-125"
                           >
                             {reaction.emoji}
                           </button>
@@ -900,55 +905,49 @@ export default function ReelsPage() {
                     )}
 
                     <button
-                      type="button"
-                      onPointerDown={(event) => {
-                        event.preventDefault();
-                        startReactionHold(reel.id);
-                      }}
-                      onPointerUp={() => finishReactionPress(reel.id)}
+                      onPointerDown={() => startReactionHold(reel.id)}
+                      onPointerUp={cancelReactionHold}
                       onPointerLeave={cancelReactionHold}
                       onPointerCancel={cancelReactionHold}
                       onContextMenu={(event) => event.preventDefault()}
-                      aria-label="Tap to Like or hold for one second to choose a reaction"
-                      className="flex min-h-14 min-w-14 touch-none flex-col items-center justify-center rounded-full bg-black/40 px-2 py-2 text-white shadow-md"
+                      onClick={() => toggleReaction(reel.id)}
+                      className="flex flex-col items-center"
                     >
-                      <span className="text-3xl leading-none">
+                      <span className="text-3xl">
                         {selectedReaction?.emoji || "👍"}
                       </span>
-                      <span className="mt-1 text-xs font-semibold">
+                      <span className="mt-1 text-xs">
                         {reel.reaction_count}
                       </span>
                     </button>
                   </div>
 
                   <button
-                    type="button"
                     onClick={() => openComments(reel.id)}
-                    aria-label="Comments"
-                    className="flex min-h-14 min-w-14 flex-col items-center justify-center rounded-full bg-black/40 px-2 py-2 text-white shadow-md"
+                    className="flex flex-col items-center"
                   >
-                    <span className="text-3xl leading-none">💬</span>
-                    <span className="mt-1 text-xs font-semibold">{reel.comment_count}</span>
+                    <span className="text-3xl">💬</span>
+                    <span className="mt-1 text-xs">
+                      {reel.comment_count}
+                    </span>
                   </button>
 
                   <button
-                    type="button"
                     onClick={() => shareReel(reel.id)}
-                    aria-label="Share video"
-                    className="flex min-h-14 min-w-14 flex-col items-center justify-center rounded-full bg-black/40 px-2 py-2 text-white shadow-md"
+                    className="flex flex-col items-center"
                   >
-                    <span className="text-3xl leading-none">↗</span>
-                    <span className="mt-1 text-xs font-semibold">Share</span>
+                    <span className="text-3xl">↗</span>
+                    <span className="mt-1 text-xs">Share</span>
                   </button>
 
                   <button
-                    type="button"
                     onClick={() => toggleSave(reel)}
-                    aria-label={reel.saved ? "Unsave video" : "Save video"}
-                    className="flex min-h-14 min-w-14 flex-col items-center justify-center rounded-full bg-black/40 px-2 py-2 text-white shadow-md"
+                    className="flex flex-col items-center"
                   >
-                    <span className="text-3xl leading-none">{reel.saved ? "🔖" : "♧"}</span>
-                    <span className="mt-1 text-xs font-semibold">Save</span>
+                    <span className="text-3xl">
+                      {reel.saved ? "🔖" : "♧"}
+                    </span>
+                    <span className="mt-1 text-xs">Save</span>
                   </button>
                 </div>
               </section>
@@ -1030,6 +1029,7 @@ export default function ReelsPage() {
                   const reel = reels.find(
                     (item) => item.id === activeReel
                   );
+
                   if (reel) submitComment(reel.id);
                 }}
                 className="rounded-full bg-blue-600 px-4 font-semibold text-white"
@@ -1059,53 +1059,51 @@ export default function ReelsPage() {
               MP4, WebM or MOV · Maximum 50 MB
             </p>
 
-            
-<label className="mt-5 flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-cyan-400/50 bg-[#081a30] px-5 py-6 text-center transition hover:border-cyan-300 hover:bg-[#102b48]">
-  <span className="text-3xl text-cyan-400">＋</span>
+            <label className="mt-5 flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-cyan-400/50 bg-[#081a30] px-5 py-6 text-center transition hover:border-cyan-300 hover:bg-[#102b48]">
+              <span className="text-3xl text-cyan-400">＋</span>
 
-  <span className="mt-2 text-sm font-bold text-white">
-    Choose video
-  </span>
+              <span className="mt-2 text-sm font-bold text-white">
+                Choose video
+              </span>
 
-  <span className="mt-1 text-xs text-gray-400">
-    Select an MP4, WebM or MOV video
-  </span>
+              <span className="mt-1 text-xs text-gray-400">
+                Select an MP4, WebM or MOV video
+              </span>
 
-  <span className="mt-1 text-xs text-cyan-300">
-    Maximum size: 50 MB
-  </span>
+              <span className="mt-1 text-xs text-cyan-300">
+                Maximum size: 50 MB
+              </span>
 
-  <input
-    type="file"
-    accept="video/mp4,video/webm,video/quicktime"
-    onChange={(event) =>
-      setUploadFile(event.target.files?.[0] ?? null)
-    }
-    className="hidden"
-  />
-</label>
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                onChange={(event) =>
+                  setUploadFile(event.target.files?.[0] ?? null)
+                }
+                className="hidden"
+              />
+            </label>
 
-{uploadFile && (
-  <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
-    <div className="min-w-0">
-      <p className="truncate text-sm font-semibold text-gray-800">
-        {uploadFile.name}
-      </p>
-      <p className="text-xs text-gray-500">
-        {(uploadFile.size / (1024 * 1024)).toFixed(2)} MB
-      </p>
-    </div>
+            {uploadFile && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-800">
+                    {uploadFile.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {(uploadFile.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
 
-    <button
-      type="button"
-      onClick={() => setUploadFile(null)}
-      className="shrink-0 rounded-md px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100"
-    >
-      Remove
-    </button>
-  </div>
-)}
-
+                <button
+                  type="button"
+                  onClick={() => setUploadFile(null)}
+                  className="shrink-0 rounded-md px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
 
             <textarea
               value={caption}
@@ -1126,18 +1124,6 @@ export default function ReelsPage() {
           </div>
         </div>
       )}
-
-      <style jsx global>{`
-        .reels-feed-scrollbar {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .reels-feed-scrollbar::-webkit-scrollbar {
-          display: none;
-          width: 0;
-          height: 0;
-        }
-      `}</style>
     </main>
   );
 }
