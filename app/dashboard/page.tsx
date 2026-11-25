@@ -11,48 +11,63 @@ const sections = [
     title: "POJAX CONNECT",
     description: "Discover people, build connections and explore opportunities.",
     icon: "◈",
+    path: "",
   },
   {
     number: "02",
     title: "POJAX SOCIAL",
     description: "Share ideas, publish posts and join discussions.",
     icon: "◎",
+    path: "/social",
   },
   {
     number: "03",
-    title: "POJAX ACADEMY",
-    description: "Learn new skills and share your knowledge.",
-    icon: "⌬",
+    title: "POJAX REELS",
+    description: "Watch videos, discover creators and share your own Reels.",
+    icon: "▶",
+    path: "/reels",
   },
   {
     number: "04",
-    title: "POJAX MARKET",
-    description: "Explore products, hardware and digital services.",
-    icon: "▣",
+    title: "POJAX ACADEMY",
+    description: "Learn new skills and share your knowledge.",
+    icon: "⌬",
+    path: "",
   },
   {
     number: "05",
-    title: "POJAX PRO",
-    description: "Discover professional services and expertise.",
-    icon: "⌘",
+    title: "POJAX MARKET",
+    description: "Explore products, hardware and digital services.",
+    icon: "▣",
+    path: "",
   },
   {
     number: "06",
-    title: "POJAX VAULT",
-    description: "Your private space for personal digital files.",
-    icon: "▤",
+    title: "POJAX PRO",
+    description: "Discover professional services and expertise.",
+    icon: "⌘",
+    path: "",
   },
   {
     number: "07",
-    title: "POJAX REWARDS",
-    description: "Get recognition for valuable contributions.",
-    icon: "✧",
+    title: "POJAX VAULT",
+    description: "Your private space for personal digital files.",
+    icon: "▤",
+    path: "",
   },
   {
     number: "08",
+    title: "POJAX REWARDS",
+    description: "Get recognition for valuable contributions.",
+    icon: "✧",
+    path: "",
+  },
+  {
+    number: "09",
     title: "POJAX BILL ME POINTS",
     description: "Explore member reward points and benefits.",
     icon: "◉",
+    path: "",
   },
 ];
 
@@ -64,9 +79,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const supabase = createClient();
+    let active = true;
 
     async function checkUser() {
       const { data, error } = await supabase.auth.getUser();
+
+      if (!active) return;
 
       if (error || !data.user) {
         router.replace("/login");
@@ -78,6 +96,19 @@ export default function DashboardPage() {
     }
 
     checkUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.replace("/login");
+      }
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   async function handleLogout() {
@@ -118,6 +149,12 @@ export default function DashboardPage() {
       description: "Find people and platform content.",
       action: "Search Now",
       path: "/search",
+    },
+    {
+      title: "POJAX REELS",
+      description: "Watch videos and discover creators.",
+      action: "Watch Reels",
+      path: "/reels",
     },
   ];
 
@@ -174,12 +211,16 @@ export default function DashboardPage() {
             Your account and community
           </h2>
 
-          <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-5">
             {quickLinks.map((link) => (
               <button
                 key={link.title}
                 onClick={() => router.push(link.path)}
-                className="min-w-0 rounded-lg border border-cyan-800 bg-[#0b1628] p-3 text-left transition hover:border-cyan-400 hover:bg-[#10213a] sm:p-4"
+                className={`min-w-0 rounded-lg border p-3 text-left transition sm:p-4 ${
+                  link.path === "/reels"
+                    ? "border-cyan-400 bg-gradient-to-br from-[#102b4b] to-[#0b1628] hover:border-cyan-300"
+                    : "border-cyan-800 bg-[#0b1628] hover:border-cyan-400 hover:bg-[#10213a]"
+                }`}
               >
                 <h3 className="text-xs font-bold text-cyan-400 sm:text-sm">
                   {link.title}
@@ -236,12 +277,14 @@ export default function DashboardPage() {
                   {section.description}
                 </p>
 
-                {section.title === "POJAX SOCIAL" ? (
+                {section.path ? (
                   <button
-                    onClick={() => router.push("/social")}
+                    onClick={() => router.push(section.path)}
                     className="mt-4 rounded-md bg-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-400"
                   >
-                    OPEN SOCIAL →
+                    {section.title === "POJAX REELS"
+                      ? "WATCH REELS →"
+                      : "OPEN SOCIAL →"}
                   </button>
                 ) : (
                   <p className="mt-4 text-xs font-bold tracking-widest text-cyan-400">
