@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -131,9 +130,7 @@ export default function ReelsPage() {
 
     const { data: reelData, error: reelError } = await supabase
       .from("reels")
-      .select(
-        "id,user_id,caption,video_path,created_at"
-      )
+      .select("id,user_id,caption,video_path,created_at")
       .order("created_at", { ascending: false })
       .limit(30);
 
@@ -308,13 +305,61 @@ export default function ReelsPage() {
     Object.entries(videoRefs.current).forEach(([id, video]) => {
       if (!video) return;
 
-      if (id === activeReel && playing) {
-        video.play().catch(() => setPlaying(false));
+      if (id === activeReel && playing && !document.hidden) {
+        const playPromise = video.play();
+
+        if (playPromise) {
+          playPromise.catch(() => {
+            // Mobile browsers may block automatic playback.
+            // The member can start playback with a tap.
+            setPlaying(false);
+          });
+        }
       } else {
         video.pause();
       }
     });
   }, [activeReel, playing, reels]);
+
+  // Stop every video as soon as the page is hidden or left.
+  // This prevents audio from continuing after navigation on phones.
+  useEffect(() => {
+    const pauseAllVideos = () => {
+      Object.values(videoRefs.current).forEach((video) => {
+        if (video && !video.paused) video.pause();
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        pauseAllVideos();
+        setPlaying(false);
+      }
+    };
+
+    const handlePageHide = () => {
+      pauseAllVideos();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+
+      // Pause synchronously so audio does not continue in the background.
+      Object.values(videoRefs.current).forEach((video) => {
+        if (!video) return;
+
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      });
+
+      videoRefs.current = {};
+    };
+  }, []);
 
   // -----------------------------------------
   // REACTIONS
@@ -743,17 +788,29 @@ export default function ReelsPage() {
               <section
                 key={reel.id}
                 data-reel-id={reel.id}
-                className="relative h-[100dvh] w-full snap-start snap-always overflow-hidden bg-black"
+                className="relative h-screen min-h-[100svh] w-full snap-start snap-always overflow-hidden bg-black"
               >
                 <video
                   ref={(element) => {
                     videoRefs.current[reel.id] = element;
                   }}
                   src={reel.video_url}
-                  className="absolute inset-0 h-full w-full cursor-pointer object-contain"
+                  className="absolute inset-0 z-0 block h-full w-full cursor-pointer bg-black object-contain"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    objectPosition: "center",
+                  }}
                   loop
                   playsInline
-                  preload="metadata"
+                  preload="auto"
+                  disablePictureInPicture
+                  onError={() =>
+                    setError(
+                      "This video could not be displayed on this device. Please try an MP4 video encoded with H.264 video and AAC audio."
+                    )
+                  }
                   onClick={() =>
                     setPlaying((value) =>
                       reel.id === activeReel ? !value : true
@@ -761,9 +818,6 @@ export default function ReelsPage() {
                   }
                   onPlay={() => {
                     if (reel.id === activeReel) setPlaying(true);
-                  }}
-                  onPause={() => {
-                    if (reel.id === activeReel) setPlaying(false);
                   }}
                 />
 
@@ -975,6 +1029,7 @@ export default function ReelsPage() {
                   const reel = reels.find(
                     (item) => item.id === activeReel
                   );
+
                   if (reel) submitComment(reel.id);
                 }}
                 className="rounded-full bg-blue-600 px-4 font-semibold text-white"
@@ -1004,53 +1059,51 @@ export default function ReelsPage() {
               MP4, WebM or MOV · Maximum 50 MB
             </p>
 
-            
-<label className="mt-5 flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-cyan-400/50 bg-[#081a30] px-5 py-6 text-center transition hover:border-cyan-300 hover:bg-[#102b48]">
-  <span className="text-3xl text-cyan-400">＋</span>
+            <label className="mt-5 flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-cyan-400/50 bg-[#081a30] px-5 py-6 text-center transition hover:border-cyan-300 hover:bg-[#102b48]">
+              <span className="text-3xl text-cyan-400">＋</span>
 
-  <span className="mt-2 text-sm font-bold text-white">
-    Choose video
-  </span>
+              <span className="mt-2 text-sm font-bold text-white">
+                Choose video
+              </span>
 
-  <span className="mt-1 text-xs text-gray-400">
-    Select an MP4, WebM or MOV video
-  </span>
+              <span className="mt-1 text-xs text-gray-400">
+                Select an MP4, WebM or MOV video
+              </span>
 
-  <span className="mt-1 text-xs text-cyan-300">
-    Maximum size: 50 MB
-  </span>
+              <span className="mt-1 text-xs text-cyan-300">
+                Maximum size: 50 MB
+              </span>
 
-  <input
-    type="file"
-    accept="video/mp4,video/webm,video/quicktime"
-    onChange={(event) =>
-      setUploadFile(event.target.files?.[0] ?? null)
-    }
-    className="hidden"
-  />
-</label>
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                onChange={(event) =>
+                  setUploadFile(event.target.files?.[0] ?? null)
+                }
+                className="hidden"
+              />
+            </label>
 
-{uploadFile && (
-  <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
-    <div className="min-w-0">
-      <p className="truncate text-sm font-semibold text-gray-800">
-        {uploadFile.name}
-      </p>
-      <p className="text-xs text-gray-500">
-        {(uploadFile.size / (1024 * 1024)).toFixed(2)} MB
-      </p>
-    </div>
+            {uploadFile && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-800">
+                    {uploadFile.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {(uploadFile.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
 
-    <button
-      type="button"
-      onClick={() => setUploadFile(null)}
-      className="shrink-0 rounded-md px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100"
-    >
-      Remove
-    </button>
-  </div>
-)}
-
+                <button
+                  type="button"
+                  onClick={() => setUploadFile(null)}
+                  className="shrink-0 rounded-md px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
 
             <textarea
               value={caption}
