@@ -1,108 +1,81 @@
+
 import Link from "next/link";
 import Logo from "@/components/Logo";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#050914] text-white">
-      {/* Navigation */}
-      <nav className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-5 py-5 md:px-12">
-        <Link href="/" className="flex items-center">
-          <Logo size={42} />
-        </Link>
+    <main className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#050914] px-6 text-white">
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <Link
-            href="/about"
-            className="rounded-lg border border-cyan-400/40 px-4 py-2.5 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-400/10"
-          >
-            About
-          </Link>
+      {/* Background glow */}
+      <div className="pointer-events-none absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 rounded-full bg-blue-600/15 blur-[110px]" />
+
+      {/* Brand at the top */}
+      <header className="relative z-10 w-full max-w-md pt-8">
+        <Link href="/" className="inline-flex items-center">
+          <Logo size={38} />
+        </Link>
+      </header>
+
+      {/* Welcome content */}
+      <section className="relative z-10 flex w-full flex-1 flex-col items-center justify-center py-12 text-center">
+
+        {/* Official logo */}
+        <div className="mb-7">
+          <Logo size={125} showText={false} />
+        </div>
+
+        {/* Platform name */}
+        <h1 className="text-3xl font-black tracking-wide sm:text-4xl">
+          POJAX T-N
+          <span className="mt-2 block text-cyan-400">
+            SOCIAL
+          </span>
+        </h1>
+
+        {/* Tagline */}
+        <p className="mt-5 max-w-xs text-sm leading-7 text-slate-400">
+          Connect. Share. Create. Learn. Grow.
+        </p>
+
+        {/* Welcome buttons */}
+        <div className="mt-12 flex w-full max-w-xs flex-col items-center gap-5">
 
           <Link
             href="/signup"
-            className="rounded-lg bg-cyan-400 px-4 py-2.5 text-sm font-bold text-[#050914] transition hover:bg-cyan-300"
+            className="w-full rounded-full bg-cyan-400 px-6 py-4 text-center font-bold text-[#050914] shadow-lg shadow-cyan-400/10 transition hover:bg-cyan-300 active:scale-95"
           >
             Create Account
           </Link>
 
           <Link
             href="/login"
-            className="rounded-lg border border-white/20 px-4 py-2.5 text-sm font-semibold transition hover:border-cyan-400"
+            className="w-full rounded-full border border-cyan-400/60 bg-white/5 px-6 py-4 text-center font-bold text-white transition hover:border-cyan-300 hover:bg-white/10 active:scale-95"
           >
             Log In
           </Link>
-        </div>
-      </nav>
-
-      {/* Welcome Section */}
-      <section className="relative flex min-h-[75vh] items-center justify-center overflow-hidden px-6 py-24 text-center">
-        <div className="absolute left-1/2 top-16 h-80 w-80 -translate-x-1/2 rounded-full bg-blue-600/20 blur-[110px]" />
-
-        <div className="relative mx-auto max-w-4xl">
-          <div className="mb-8 flex justify-center">
-            <Logo size={110} showText={false} />
-          </div>
-
-          <p className="mb-6 text-sm font-semibold tracking-[0.3em] text-cyan-400">
-            CONNECT • SHARE • CREATE • LEARN • GROW
-          </p>
-
-          <h1 className="text-5xl font-black leading-tight md:text-7xl">
-            YOUR WORLD.
-            <span className="block text-cyan-400">
-              YOUR POSSIBILITIES.
-            </span>
-          </h1>
-
-          <p className="mx-auto mt-7 max-w-2xl text-base leading-8 text-slate-400 md:text-lg">
-            Welcome to POJAX SOCIAL, a growing digital platform designed
-            to bring people together, encourage creativity, support learning,
-            discover opportunities and create a connected world.
-          </p>
-
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/signup"
-              className="w-full rounded-xl bg-cyan-400 px-8 py-4 font-bold text-[#050914] transition hover:bg-cyan-300 sm:w-auto"
-            >
-              Create Account
-            </Link>
-
-            <Link
-              href="/login"
-              className="w-full rounded-xl border border-white/20 px-8 py-4 font-semibold transition hover:border-cyan-400 sm:w-auto"
-            >
-              Log In
-            </Link>
-          </div>
 
           <Link
             href="/about"
-            className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+            className="w-full rounded-xl border border-white/15 bg-white/5 px-6 py-4 text-center font-semibold text-cyan-300 transition hover:border-cyan-400 hover:bg-white/10 active:scale-95"
           >
-            Discover POJAX SOCIAL
-            <span aria-hidden="true">→</span>
+            About
           </Link>
 
-          <p className="mt-14 text-sm font-semibold tracking-widest text-slate-500">
-            A NEW WORLD OF DIGITAL CONNECTIONS
-          </p>
         </div>
+
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-sm text-slate-500">
-        <p>© 2026 POJAX T-N. All rights reserved.</p>
-        <p className="mt-2">
-          Connect. Share. Create. Learn. Grow.
+      <footer className="relative z-10 w-full max-w-md pb-7 text-center">
+        <p className="text-xs tracking-wide text-slate-500">
+          A NEW WORLD OF DIGITAL CONNECTIONS
         </p>
-        <Link
-          href="/about"
-          className="mt-4 inline-block text-cyan-400 hover:text-cyan-300"
-        >
-          About POJAX SOCIAL
-        </Link>
+
+        <p className="mt-4 text-xs text-slate-600">
+          © 2026 POJAX T-N. All rights reserved.
+        </p>
       </footer>
+
     </main>
   );
 }
