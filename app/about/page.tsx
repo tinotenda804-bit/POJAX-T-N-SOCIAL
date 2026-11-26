@@ -437,7 +437,7 @@ export default function AboutPage() {
           className="mt-8 inline-flex items-center gap-3 rounded-xl border border-cyan-400 px-8 py-4 font-bold text-cyan-300 transition hover:bg-cyan-400 hover:text-[#050914]"
         >
           <span aria-hidden="true">←</span>
-          Back to Welcome Page
+          Back
         </Link>
 
         <p className="mt-10 text-sm text-slate-500">
