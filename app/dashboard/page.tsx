@@ -2,86 +2,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
-const sections = [
-  {
-    number: "01",
-    title: "POJAX CONNECT",
-    description: "Discover people, build connections and explore opportunities.",
-    icon: "◈",
-    path: "",
-  },
-  {
-    number: "02",
-    title: "POJAX SOCIAL",
-    description: "Share ideas, publish posts and join discussions.",
-    icon: "◎",
-    path: "/social",
-  },
-  {
-    number: "03",
-    title: "POJAX REELS",
-    description: "Watch videos, discover creators and share your own Reels.",
-    icon: "▶",
-    path: "/reels",
-  },
-  {
-    number: "04",
-    title: "POJAX ACADEMY",
-    description: "Learn new skills and share your knowledge.",
-    icon: "⌬",
-    path: "",
-  },
-  {
-    number: "05",
-    title: "POJAX MARKET",
-    description: "Explore products, hardware and digital services.",
-    icon: "▣",
-    path: "",
-  },
-  {
-    number: "06",
-    title: "POJAX PRO",
-    description: "Discover professional services and expertise.",
-    icon: "⌘",
-    path: "",
-  },
-  {
-    number: "07",
-    title: "POJAX VAULT",
-    description: "Your private space for personal digital files.",
-    icon: "▤",
-    path: "",
-  },
-  {
-    number: "08",
-    title: "POJAX REWARDS",
-    description: "Get recognition for valuable contributions.",
-    icon: "✧",
-    path: "",
-  },
-  {
-    number: "09",
-    title: "POJAX BILL ME POINTS",
-    description: "Explore member reward points and benefits.",
-    icon: "◉",
-    path: "",
-  },
+const navigation = [
+  { icon: "✉", label: "Messages", path: "/connections", note: "Connections area" },
+  { icon: "🎬", label: "Reels", path: "/reels" },
+  { icon: "📰", label: "News", path: "", note: "Coming soon" },
+  { icon: "👥", label: "Friends", path: "/connections" },
+  { icon: "💰", label: "Market", path: "", note: "Coming soon" },
+  { icon: "📚", label: "Academy", path: "", note: "Coming soon" },
+  { icon: "💼", label: "Jobs", path: "", note: "Coming soon" },
+  { icon: "⚽", label: "Games", path: "", note: "Coming soon" },
+];
+
+const extraFeatures = [
+  { icon: "📡", title: "POJAX LIVE", description: "Watch and create live broadcasts.", status: "Coming soon" },
+  { icon: "🏆", title: "POJAX REWARDS", description: "Recognition for valuable contributions.", status: "Coming soon" },
+  { icon: "🔐", title: "POJAX VAULT", description: "A private space for your digital files.", status: "Coming soon" },
+  { icon: "⭐", title: "POJAX PRO", description: "Discover professional services and expertise.", status: "Coming soon" },
 ];
 
 export default function DashboardPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
+  const [displayName, setDisplayName] = useState("POJAX User");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     const supabase = createClient();
     let active = true;
 
-    async function checkUser() {
+    async function loadUser() {
       const { data, error } = await supabase.auth.getUser();
 
       if (!active) return;
@@ -91,11 +46,18 @@ export default function DashboardPage() {
         return;
       }
 
-      setEmail(data.user.email ?? "");
+      const user = data.user;
+      const name =
+        user.user_metadata?.full_name ||
+        user.user_metadata?.display_name ||
+        "POJAX User";
+
+      setDisplayName(name);
+      setEmail(user.email ?? "");
       setLoading(false);
     }
 
-    checkUser();
+    loadUser();
 
     const {
       data: { subscription },
@@ -112,188 +74,206 @@ export default function DashboardPage() {
   }, [router]);
 
   async function handleLogout() {
+    setSigningOut(true);
+
     const supabase = createClient();
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      setSigningOut(false);
+      alert("We couldn't sign you out. Please try again.");
+      return;
+    }
+
     router.replace("/login");
   }
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#050b18] text-sm text-white">
-        Loading your dashboard...
+      <main className="flex min-h-screen items-center justify-center bg-[#07182d] text-cyan-300">
+        Loading POJAX...
       </main>
     );
   }
 
-  const quickLinks = [
-    {
-      title: "POJAX PROFILE",
-      description: "Manage your member information.",
-      action: "Open Profile",
-      path: "/profile",
-    },
-    {
-      title: "POJAX SECURITY",
-      description: "Manage your account security.",
-      action: "Open Security",
-      path: "/security",
-    },
-    {
-      title: "POJAX GROUPS",
-      description: "Explore and manage your groups.",
-      action: "Open Groups",
-      path: "/groups",
-    },
-    {
-      title: "POJAX SEARCH",
-      description: "Find people and platform content.",
-      action: "Search Now",
-      path: "/search",
-    },
-  ];
-
   return (
-    <main className="min-h-screen bg-[#050b18] px-3 py-4 text-white sm:px-5 sm:py-6 md:px-8">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen bg-[#07182d] text-white">
+      <header className="sticky top-0 z-40 border-b border-cyan-900 bg-[#081b33]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 py-3 sm:px-6">
+          <Link href="/dashboard" className="shrink-0 text-xl font-black tracking-wide text-cyan-300 sm:text-2xl">
+            POJAX <span className="text-white">T-N</span>
+          </Link>
 
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-500/30 pb-4">
-          <div>
-            <h1 className="text-2xl font-black tracking-wide text-cyan-400 sm:text-3xl">
-              POJAX T-N
-            </h1>
-            <p className="mt-1 text-xs text-gray-400 sm:text-sm">
-              Your world of connections and opportunities.
-            </p>
-          </div>
+          <Link
+            href="/search"
+            aria-label="Search POJAX"
+            className="ml-auto flex h-10 w-10 items-center justify-center rounded-full border border-cyan-800 text-xl hover:bg-cyan-950"
+          >
+            ⌕
+          </Link>
 
           <button
-            onClick={handleLogout}
-            className="rounded-md bg-cyan-500 px-3 py-2 text-xs font-bold text-black transition hover:bg-cyan-400 sm:px-4"
+            type="button"
+            aria-label="Notifications"
+            title="Notifications are coming soon"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-800 text-lg hover:bg-cyan-950"
+            onClick={() => alert("POJAX Notifications are coming soon.")}
           >
-            Sign Out
+            ♧
           </button>
-        </header>
 
-        <section className="mt-5 rounded-xl border border-cyan-500/30 bg-gradient-to-r from-[#0b1b35] to-[#0b1628] p-4 sm:mt-7 sm:p-6">
-          <p className="text-xs font-semibold tracking-widest text-cyan-400">
-            MEMBER DASHBOARD
-          </p>
+          <details className="relative">
+            <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-cyan-800 text-xl hover:bg-cyan-950">
+              ☰
+            </summary>
+            <div className="absolute right-0 mt-3 w-56 rounded-xl border border-cyan-800 bg-[#0b2340] p-2 shadow-xl">
+              <Link className="block rounded-lg px-3 py-3 text-sm hover:bg-cyan-950" href="/profile">
+                My Profile
+              </Link>
+              <Link className="block rounded-lg px-3 py-3 text-sm hover:bg-cyan-950" href="/security">
+                Account Security
+              </Link>
+              <Link className="block rounded-lg px-3 py-3 text-sm hover:bg-cyan-950" href="/groups">
+                My Groups
+              </Link>
+              <Link className="block rounded-lg px-3 py-3 text-sm hover:bg-cyan-950" href="/privacy">
+                Privacy
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={signingOut}
+                className="mt-1 w-full rounded-lg px-3 py-3 text-left text-sm font-semibold text-red-300 hover:bg-red-950/40 disabled:opacity-50"
+              >
+                {signingOut ? "Signing out..." : "Sign Out"}
+              </button>
+            </div>
+          </details>
+        </div>
+      </header>
 
-          <h2 className="mt-3 text-2xl font-black sm:text-3xl md:text-4xl">
-            Welcome to PojaX T-N.
-          </h2>
+      <div className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-7">
+        <section className="overflow-hidden rounded-2xl border border-cyan-800 bg-gradient-to-br from-[#174b7c] via-[#17639b] to-[#287fbd] p-5 shadow-lg sm:p-7">
+          <div className="flex flex-wrap items-center gap-5">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/70 bg-[#0b2b4c] text-4xl shadow-lg">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-300">
-            Connect with people, share ideas, learn, discover opportunities
-            and contribute to a growing global platform.
-          </p>
-
-          <div className="mt-4 border-t border-white/10 pt-3">
-            <p className="text-xs text-gray-400">Your signed-in email</p>
-            <p className="mt-1 break-all text-sm font-semibold text-cyan-300">
-              {email}
-            </p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold tracking-[0.2em] text-cyan-100">
+                YOUR POJAX ACCOUNT
+              </p>
+              <h1 className="mt-1 break-words text-2xl font-black sm:text-3xl">
+                {displayName}
+              </h1>
+              <p className="mt-1 break-all text-sm text-blue-100">{email}</p>
+              <Link
+                href="/profile"
+                className="mt-3 inline-flex rounded-full border border-white/60 px-4 py-2 text-xs font-bold hover:bg-white/10"
+              >
+                VIEW PROFILE →
+              </Link>
+            </div>
           </div>
         </section>
 
-        <section className="mt-7">
-          <p className="text-xs font-bold tracking-widest text-cyan-400">
-            MEMBER QUICK ACCESS
-          </p>
+        <section className="mt-6">
+          <div className="mb-3">
+            <p className="text-xs font-bold tracking-[0.2em] text-cyan-400">
+              EXPLORE POJAX
+            </p>
+            <h2 className="mt-1 text-xl font-black sm:text-2xl">
+              Everything in one place
+            </h2>
+          </div>
 
-          <h2 className="mt-1 text-xl font-black sm:text-2xl">
-            Your account and community
-          </h2>
-
-          <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-5">
-            {quickLinks.map((link) => (
-              <button
-                key={link.title}
-                onClick={() => router.push(link.path)}
-                className={`min-w-0 rounded-lg border p-3 text-left transition sm:p-4 ${
-                  link.path === "/reels"
-                    ? "border-cyan-400 bg-gradient-to-br from-[#102b4b] to-[#0b1628] hover:border-cyan-300"
-                    : "border-cyan-800 bg-[#0b1628] hover:border-cyan-400 hover:bg-[#10213a]"
-                }`}
-              >
-                <h3 className="text-xs font-bold text-cyan-400 sm:text-sm">
-                  {link.title}
-                </h3>
-
-                <p className="mt-1 text-xs leading-5 text-gray-400">
-                  {link.description}
-                </p>
-
-                <span className="mt-3 inline-block text-xs font-semibold text-cyan-300">
-                  {link.action} →
-                </span>
-              </button>
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-8">
+            {navigation.map((item) => (
+              <div key={item.label}>
+                {item.path ? (
+                  <Link
+                    href={item.path}
+                    className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-cyan-900 bg-[#0c2340] p-2 text-center transition hover:border-cyan-400 hover:bg-[#103052]"
+                  >
+                    <span className="text-2xl sm:text-3xl">{item.icon}</span>
+                    <span className="text-[10px] font-bold sm:text-xs">{item.label}</span>
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    title={item.note}
+                    onClick={() => alert(`${item.label} is coming soon.`)}
+                    className="flex min-h-24 w-full flex-col items-center justify-center gap-2 rounded-xl border border-slate-800 bg-[#0a1c32] p-2 text-center opacity-70"
+                  >
+                    <span className="text-2xl sm:text-3xl">{item.icon}</span>
+                    <span className="text-[10px] font-bold sm:text-xs">{item.label}</span>
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         </section>
 
-        <section className="mt-9">
-          <div>
-            <p className="text-xs font-bold tracking-widest text-cyan-400">
-              YOUR PLATFORM
-            </p>
-
-            <h2 className="mt-1 text-xl font-black sm:text-2xl">
-              Explore PojaX T-N
-            </h2>
-
-            <p className="mt-1 text-xs text-gray-400 sm:text-sm">
-              Different opportunities. One connected platform.
-            </p>
+        <section className="mt-8">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold tracking-[0.2em] text-cyan-400">
+                YOUR WORLD
+              </p>
+              <h2 className="mt-1 text-xl font-black sm:text-2xl">
+                POJAX SOCIAL
+              </h2>
+            </div>
+            <Link href="/social" className="text-xs font-bold text-cyan-300 hover:text-white">
+              OPEN SOCIAL →
+            </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
-            {sections.map((section) => (
+          <Link
+            href="/social"
+            className="block rounded-2xl border border-cyan-900 bg-[#0c2340] p-5 transition hover:border-cyan-500 sm:p-7"
+          >
+            <div className="text-3xl">🌐</div>
+            <h3 className="mt-3 text-lg font-bold">Discover what's happening</h3>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+              Explore posts, share your ideas and discover content from people across POJAX.
+            </p>
+            <span className="mt-4 inline-block text-sm font-bold text-cyan-300">
+              EXPLORE THE FEED →
+            </span>
+          </Link>
+        </section>
+
+        <section className="mt-8">
+          <p className="text-xs font-bold tracking-[0.2em] text-cyan-400">
+            MORE FROM POJAX
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {extraFeatures.map((feature) => (
               <article
-                key={section.number}
-                className="min-w-0 rounded-lg border border-gray-700 bg-[#0b1628] p-4 transition hover:border-cyan-400/60"
+                key={feature.title}
+                className="rounded-xl border border-cyan-950 bg-[#0c1f37] p-4"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl text-cyan-400">
-                    {section.icon}
-                  </span>
-
-                  <span className="text-xs text-gray-600">
-                    {section.number}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{feature.icon}</span>
+                  <div>
+                    <h3 className="text-sm font-bold text-cyan-300">{feature.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-400">
+                      {feature.description}
+                    </p>
+                  </div>
                 </div>
-
-                <h3 className="mt-3 text-sm font-bold text-cyan-400">
-                  {section.title}
-                </h3>
-
-                <p className="mt-2 text-xs leading-5 text-gray-400">
-                  {section.description}
+                <p className="mt-3 text-[10px] font-bold tracking-widest text-slate-500">
+                  {feature.status.toUpperCase()}
                 </p>
-
-                {section.path ? (
-                  <button
-                    onClick={() => router.push(section.path)}
-                    className="mt-4 rounded-md bg-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-400"
-                  >
-                    {section.title === "POJAX REELS"
-                      ? "WATCH REELS →"
-                      : "OPEN SOCIAL →"}
-                  </button>
-                ) : (
-                  <p className="mt-4 text-xs font-bold tracking-widest text-cyan-400">
-                    IN DEVELOPMENT
-                  </p>
-                )}
               </article>
             ))}
           </div>
         </section>
 
-        <footer className="mt-9 border-t border-white/10 py-5 text-center text-xs text-gray-500">
-          © 2026 PojaX T-N. Connect the world. Empower expertise. Protect the future.
+        <footer className="mt-10 border-t border-cyan-950 py-6 text-center text-xs text-slate-500">
+          © 2026 POJAX T-N. Connect. Share. Create. Learn. Grow.
         </footer>
-
       </div>
     </main>
   );
